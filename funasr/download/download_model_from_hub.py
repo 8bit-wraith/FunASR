@@ -101,6 +101,8 @@ def download_from_ms(**kwargs):
 
 
 def download_from_hf(**kwargs):
+    # Only the caller can authorize installation, never a downloaded model config.
+    trust_requirements = kwargs.get("trust_remote_code", False) is True
     model_or_path = kwargs.get("model")
     if model_or_path in name_maps_hf:
         model_or_path = name_maps_hf[model_or_path]
@@ -152,7 +154,7 @@ def download_from_hf(**kwargs):
             kwargs["jieba_usr_dict"] = os.path.join(model_or_path, "jieba_usr_dict")
     if isinstance(kwargs, DictConfig):
         kwargs = OmegaConf.to_container(kwargs, resolve=True)
-    if os.path.exists(os.path.join(model_or_path, "requirements.txt")):
+    if os.path.exists(os.path.join(model_or_path, "requirements.txt")) and trust_requirements:
         requirements = os.path.join(model_or_path, "requirements.txt")
         print(f"Detect model requirements, begin to install it: {requirements}")
         from funasr.utils.install_model_requirements import install_requirements
